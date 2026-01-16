@@ -1,0 +1,27 @@
+{
+  "models": [
+    { "id": "gpt-4o", "name": "GPT-4o", "description": "Most capable model for complex tasks" },
+    { "id": "gpt-4o-mini", "name": "GPT-4o Mini", "description": "Fast and efficient for simple tasks" },
+    { "id": "claude-3-opus", "name": "Claude 3 Opus", "description": "Advanced reasoning and analysis" },
+    { "id": "claude-3-sonnet", "name": "Claude 3 Sonnet", "description": "Balanced performance and speed" }
+  ],
+  "modes": ["complete", "insert", "edit"],
+  "presets": [
+    { "id": "creative", "name": "Creative", "temperature": 0.9, "maxLength": 2048, "topP": 1.0 },
+    { "id": "balanced", "name": "Balanced", "temperature": 0.7, "maxLength": 1024, "topP": 0.9 },
+    { "id": "precise", "name": "Precise", "temperature": 0.3, "maxLength": 512, "topP": 0.5 }
+  ],
+  "defaults": {
+    "model": "gpt-4o",
+    "mode": "complete",
+    "temperature": 0.7,
+    "maxLength": 256,
+    "topP": 0.9
+  },
+  "examples": [
+    { "label": "Explain code", "prompt": "Explain the following code step by step:" },
+    { "label": "Write a story", "prompt": "Write a short story about:" },
+    { "label": "Summarize text", "prompt": "Summarize the following text in 3 bullet points:" },
+    { "label": "Fix bugs", "prompt": "Find and fix bugs in the following code:" }
+  ]
+}

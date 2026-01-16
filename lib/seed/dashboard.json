@@ -1,0 +1,43 @@
+{
+  "stats": [
+    { "key": "revenue", "label": "Total Revenue", "value": "$1,250.00", "trend": { "direction": "up", "value": "+12.5%", "label": "Trending up this month" } },
+    { "key": "customers", "label": "New Customers", "value": "1,234", "trend": { "direction": "down", "value": "-20%", "label": "Acquisition needs attention" } },
+    { "key": "accounts", "label": "Active Accounts", "value": "45,678", "trend": { "direction": "up", "value": "+12.5%", "label": "Strong user retention" } },
+    { "key": "growth", "label": "Growth Rate", "value": "4.5%", "trend": { "direction": "up", "value": "+4.5%", "label": "Meets growth projections" } }
+  ],
+  "documents": [
+    { "id": 1, "header": "Cover page", "type": "Cover page", "status": "in_progress", "reviewer": "Eddie Lake" },
+    { "id": 2, "header": "Table of contents", "type": "Table of contents", "status": "done", "reviewer": "Eddie Lake" },
+    { "id": 3, "header": "Executive summary", "type": "Narrative", "status": "done", "reviewer": "Eddie Lake" },
+    { "id": 4, "header": "Technical approach", "type": "Narrative", "status": "done", "reviewer": "Jamik Tashpulatov" },
+    { "id": 5, "header": "Design", "type": "Narrative", "status": "in_progress", "reviewer": "Jamik Tashpulatov" },
+    { "id": 6, "header": "Capabilities", "type": "Narrative", "status": "in_progress", "reviewer": "Jamik Tashpulatov" },
+    { "id": 7, "header": "Integration with existing systems", "type": "Narrative", "status": "in_progress", "reviewer": "Jamik Tashpulatov" },
+    { "id": 8, "header": "Innovation and Advantages", "type": "Narrative", "status": "done", "reviewer": null },
+    { "id": 9, "header": "Overview of EMR's Innovative Solutions", "type": "Technical content", "status": "done", "reviewer": null },
+    { "id": 10, "header": "Advanced Algorithms and Machine Learning", "type": "Narrative", "status": "done", "reviewer": null }
+  ],
+  "navigation": {
+    "main": [
+      { "label": "Dashboard", "href": "/dashboard", "icon": "LayoutDashboard" },
+      { "label": "Lifecycle", "href": "/lifecycle", "icon": "RefreshCw" },
+      { "label": "Analytics", "href": "/analytics", "icon": "BarChart3" },
+      { "label": "Projects", "href": "/projects", "icon": "FolderKanban" },
+      { "label": "Team", "href": "/team", "icon": "Users" }
+    ],
+    "documents": [
+      { "label": "Data Library", "href": "/data-library", "count": 12 },
+      { "label": "Reports", "href": "/reports", "count": 5 },
+      { "label": "Word Assistant", "href": "/word-assistant", "count": 3 }
+    ]
+  },
+  "chartData": [
+    { "month": "Jan", "visitors": 1200 },
+    { "month": "Feb", "visitors": 1800 },
+    { "month": "Mar", "visitors": 2400 },
+    { "month": "Apr", "visitors": 2100 },
+    { "month": "May", "visitors": 2800 },
+    { "month": "Jun", "visitors": 3200 }
+  ],
+  "tabs": ["Outline", "Past Performance", "Key Personnel", "Focus Documents"]
+}
