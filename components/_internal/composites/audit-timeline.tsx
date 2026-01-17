@@ -8,12 +8,12 @@
 
 import React from "react";
 import { Card, Skeleton } from "@/components/primitives";
-import { AxisProps } from "@/lib/types/axis-props";
-import { devAssert } from "@/lib/utils/dev-assert";
-import { AuditEventSchema, type AuditEvent } from "@/lib/schemas/domain";
-import { SafeText } from "@/lib/utils/safe-text";
+import { AxisProps } from "@/lib/shared/types/axis-props";
+import { devAssert } from "@/lib/shared/utils/dev-assert";
+import { AuditEventSchema, type AuditEvent } from "@/lib/client/zod/domain";
+import { SafeText } from "@/lib/shared/utils/safe-text";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/core/utils";
 
 export interface AuditTimelineProps
   extends AxisProps<{

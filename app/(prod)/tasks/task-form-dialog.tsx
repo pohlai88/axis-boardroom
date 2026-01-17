@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { useActionState, startTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
@@ -10,26 +11,40 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/primitives";
-import { Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/primitives";
-import { type Task, taskStatuses, taskPriorities, taskTypes, statusLabels, priorityLabels, typeLabels } from "@/lib/seed";
-import { createTaskAction, updateTaskAction, type TaskFormState } from "@/lib/actions";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/primitives";
+import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/primitives";
+import { type Task, type TaskFormData, taskFormSchema } from "@/lib/contracts";
+import { createTaskAction, updateTaskAction } from "@/lib/server/actions";
+import { applyServerIssuesToForm } from "@/lib/shared/utils/form-issues";
+import { handleError } from "@/lib/client/utils/error-handler";
 import { toast } from "sonner";
 
-// Memoize option arrays to prevent recreation
-const statusOptions = taskStatuses.map((status) => ({
-  value: status,
-  label: statusLabels[status],
-}));
+const statusLabels = {
+  backlog: "Backlog",
+  todo: "To Do",
+  in_progress: "In Progress",
+  done: "Done",
+  canceled: "Canceled",
+} as const;
 
-const priorityOptions = taskPriorities.map((priority) => ({
-  value: priority,
-  label: priorityLabels[priority],
-}));
+const priorityLabels = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+} as const;
 
-const typeOptions = taskTypes.map((type) => ({
-  value: type,
-  label: typeLabels[type],
-}));
+const typeLabels = {
+  bug: "Bug",
+  feature: "Feature",
+  documentation: "Documentation",
+} as const;
 
 interface TaskFormDialogProps {
   open: boolean;
@@ -44,203 +59,173 @@ export const TaskFormDialog = React.memo<TaskFormDialogProps>(function TaskFormD
   task,
   onSuccess,
 }) {
-  // Memoize initial form data
-  const initialFormData = React.useMemo(
-    () => ({
+  const form = useForm<TaskFormData>({
+    resolver: zodResolver(taskFormSchema),
+    defaultValues: {
       title: task?.title || "",
       type: task?.type || "feature",
-      status: task?.status || "todo",
-      priority: task?.priority || "medium",
-    }),
-    [task]
-  );
+      status: (task?.status || "todo") as "backlog" | "todo" | "in_progress" | "done" | "canceled",
+      priority: (task?.priority || "medium") as "low" | "medium" | "high",
+    },
+  });
 
-  const [formData, setFormData] = React.useState(initialFormData);
-
-  // Use useActionState for form actions (Next.js best practice)
-  const initialState: TaskFormState = { message: "" };
-  const [state, formAction, pending] = useActionState(
-    task ? updateTaskAction : createTaskAction,
-    initialState
-  );
-
-  // Reset form when task or open state changes
+  // Reset form when dialog opens/closes or task changes
   React.useEffect(() => {
     if (open) {
-      if (task) {
-        setFormData({
-          title: task.title,
-          type: task.type,
-          status: task.status,
-          priority: task.priority,
-        });
-      } else {
-        setFormData({
-          title: "",
-          type: "feature",
-          status: "todo",
-          priority: "medium",
-        });
-      }
+      form.reset({
+        title: task?.title || "",
+        type: task?.type || "feature",
+        status: (task?.status || "todo") as "backlog" | "todo" | "in_progress" | "done" | "canceled",
+        priority: (task?.priority || "medium") as "low" | "medium" | "high",
+      });
     }
-  }, [task, open]);
+  }, [task, open, form]);
 
-  // Handle form submission with useActionState
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    const formDataObj = new FormData(e.currentTarget);
-    
-    // Add task ID if updating
-    if (task) {
-      formDataObj.set('id', task.id);
+  const onSubmit = async (data: TaskFormData) => {
+    const input = task ? { ...data, id: task.id } : data;
+    const result = task 
+      ? await updateTaskAction(input) 
+      : await createTaskAction(input);
+
+    if (!result.ok) {
+      // Map server validation issues back to form fields
+      applyServerIssuesToForm(form.setError, result.error.issues);
+      // Use standardized error handler (toast is handled automatically)
+      handleError(result, { showToast: true });
+      return;
     }
-    
-    // Add form fields
-    formDataObj.set('title', formData.title);
-    formDataObj.set('type', formData.type);
-    formDataObj.set('status', formData.status);
-    formDataObj.set('priority', formData.priority);
 
-    startTransition(() => {
-      formAction(formDataObj);
-    });
+    toast.success(task ? "Task updated successfully" : "Task created successfully");
+    onOpenChange(false);
+    onSuccess?.();
   };
 
-  // Handle state changes (success/error messages)
-  React.useEffect(() => {
-    if (state?.message) {
-      toast.success(state.message);
-      onOpenChange(false);
-      onSuccess?.();
-    } else if (state?.error) {
-      toast.error(state.error);
-    }
-  }, [state, onOpenChange, onSuccess]);
+  const isBusy = form.formState.isSubmitting;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>{task ? "Edit Task" : "Create New Task"}</DialogTitle>
-            <DialogDescription>
-              {task
-                ? "Update the task details below."
-                : "Fill in the details to create a new task."}
-            </DialogDescription>
-          </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <DialogHeader>
+              <DialogTitle>{task ? "Edit Task" : "Create New Task"}</DialogTitle>
+              <DialogDescription>
+                {task
+                  ? "Update the task details below."
+                  : "Fill in the details to create a new task."}
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            {/* Error message display (Next.js best practice) */}
-            {state?.error && (
-              <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive" role="alert" aria-live="polite">
-                {state.error}
-              </div>
-            )}
-            
-            <div className="grid gap-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
+            <div className="grid gap-4 py-4">
+              {/* Title Field */}
+              <FormField
+                control={form.control}
                 name="title"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, title: e.target.value }))
-                }
-                placeholder="Enter task title"
-                required
-                disabled={pending}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter task title" {...field} disabled={isBusy} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Type Field */}
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Type</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange} disabled={isBusy}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(typeLabels).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Status Field */}
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange} disabled={isBusy}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(statusLabels).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Priority Field */}
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange} disabled={isBusy}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(priorityLabels).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="type">Type</Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, type: value as Task["type"] }))
-                }
-                disabled={pending}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isBusy}
               >
-                <SelectTrigger id="type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {typeOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    status: value as Task["status"],
-                  }))
-                }
-                disabled={pending}
-              >
-                <SelectTrigger id="status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {statusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="priority">Priority</Label>
-              <Select
-                value={formData.priority}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    priority: value as Task["priority"],
-                  }))
-                }
-                disabled={pending}
-              >
-                <SelectTrigger id="priority">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {priorityOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={pending}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={pending}>
-              {pending ? "Saving..." : task ? "Update" : "Create"}
-            </Button>
-          </DialogFooter>
-        </form>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isBusy || !form.formState.isValid}>
+                {isBusy ? "Saving..." : task ? "Update" : "Create"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

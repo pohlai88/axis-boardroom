@@ -6,9 +6,9 @@
  */
 
 import { Badge } from "@/components/primitives";
-import { roleClasses } from "@/lib/design-tokens";
-import { AxisProps } from "@/lib/types/axis-props";
-import { Role } from "@/lib/schemas/domain";
+import { roleClasses } from "@/lib/design/tokens";
+import { AxisProps } from "@/lib/shared/types/axis-props";
+import { Role } from "@/lib/client/zod/domain";
 
 export interface RoleBadgeProps
   extends AxisProps<{

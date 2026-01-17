@@ -1,0 +1,63 @@
+/**
+ * Example: Structured JSON Seeding
+ * 
+ * This file shows how to use funcs.default() for fixed JSON structures
+ * that match your TypeScript schema types.
+ * 
+ * Copy the relevant sections to lib/server/drizzle/seed.ts if you need structured JSON.
+ */
+
+import { seed } from 'drizzle-seed'
+
+// Example: Fixed JSON structures matching schema types
+await seed(db, allSchemas, { count: 100 }).refine((funcs) => ({
+  organizations: {
+    columns: {
+      // Fixed structure matching TypeScript type
+      settings: funcs.default({
+        defaultValue: {
+          features: ['basic_analytics'],
+          max_users: 100,
+        },
+      }),
+      
+      // Fixed structure matching TypeScript type
+      metadata: funcs.default({
+        defaultValue: {
+          industry: 'Technology',
+          employees: '1-10',
+          founded: 2020,
+        },
+      }),
+    },
+  },
+  
+  analyticsAggregates: {
+    columns: {
+      // Fixed structure matching schema
+      data: funcs.default({
+        defaultValue: {
+          count: 0,
+          average: 0,
+          min: 0,
+          max: 0,
+          p50: 0,
+          p75: 0,
+          p95: 0,
+          p99: 0,
+        },
+      }),
+    },
+  },
+}))
+
+/**
+ * Comparison:
+ * 
+ * funcs.json() - Random JSON structures (varied, good for testing)
+ * funcs.default() - Fixed JSON structures (consistent, matches types)
+ * 
+ * Choose based on your needs:
+ * - Testing: Use funcs.json() for variety
+ * - Production: Use funcs.default() for consistency
+ */

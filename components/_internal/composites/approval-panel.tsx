@@ -9,15 +9,15 @@
 import React from "react";
 import { Card, Badge, Button, Textarea } from "@/components/primitives";
 import { StatusBadge } from "@/components/_internal/micro";
-import { AxisProps } from "@/lib/types/axis-props";
-import { devAssert } from "@/lib/utils/dev-assert";
+import { AxisProps } from "@/lib/shared/types/axis-props";
+import { devAssert } from "@/lib/shared/utils/dev-assert";
 import {
   ApprovalPanelSchema,
   type ApprovalStatus,
   type Approver,
-} from "@/lib/schemas/domain";
-import { SafeText } from "@/lib/utils/safe-text";
-import { cn } from "@/lib/utils";
+} from "@/lib/client/zod/domain";
+import { SafeText } from "@/lib/shared/utils/safe-text";
+import { cn } from "@/lib/core/utils";
 import { format } from "date-fns";
 
 export interface ApprovalPanelProps

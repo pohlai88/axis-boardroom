@@ -23,6 +23,11 @@
       "@/*": ["./*"],
       "@/components/*": ["./components/*"],
       "@/lib/*": ["./lib/*"],
+      "@/lib/design/*": ["./lib/design/*"],
+      "@/lib/shared/*": ["./lib/shared/*"],
+      "@/lib/server/*": ["./lib/server/*"],
+      "@/lib/client/*": ["./lib/client/*"],
+      "@/lib/core/*": ["./lib/core/*"],
       "@/hooks/*": ["./hooks/*"]
     }
   },

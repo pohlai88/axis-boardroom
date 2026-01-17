@@ -21,7 +21,7 @@ import {
   TooltipTrigger,
 } from "@/components/primitives";
 import { ChevronDown, type LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/core/utils";
 
 /**
  * Action specification types

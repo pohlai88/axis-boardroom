@@ -6,9 +6,9 @@
  */
 
 import { Badge } from "@/components/primitives";
-import { priorityClasses } from "@/lib/design-tokens";
-import { AxisProps } from "@/lib/types/axis-props";
-import { Priority } from "@/lib/schemas/domain";
+import { priorityClasses } from "@/lib/design/tokens";
+import { AxisProps } from "@/lib/shared/types/axis-props";
+import { Priority } from "@/lib/client/zod/domain";
 
 export interface PriorityBadgeProps
   extends AxisProps<{

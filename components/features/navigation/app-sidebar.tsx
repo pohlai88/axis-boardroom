@@ -17,7 +17,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/_internal/ui/sidebar"
-import { getNavigationConfig, isRouteActive } from "@/lib/config/navigation"
+import { getNavigationConfig, isRouteActive } from "@/lib/shared/config/navigation"
 
 // User data - in production, this would come from auth context or API
 const defaultUser = {

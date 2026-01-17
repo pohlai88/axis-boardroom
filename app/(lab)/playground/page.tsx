@@ -28,8 +28,8 @@ import {
   playgroundDefaults,
   playgroundExamples,
   type PlaygroundMode,
-} from "@/lib/seed";
-import { cn } from "@/lib/utils";
+} from "@/lib/server/seed";
+import { cn } from "@/lib/core/utils";
 import { Save, Share2, RotateCcw, Play, Sparkles } from "lucide-react";
 
 function Slider({

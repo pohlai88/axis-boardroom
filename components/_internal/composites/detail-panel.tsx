@@ -15,9 +15,11 @@ import {
   Separator,
   Skeleton,
 } from "@/components/primitives";
-import { AxisProps } from "@/lib/types/axis-props";
-import { cn } from "@/lib/utils";
-import { motion } from "@/lib/motion-tokens";
+import { AxisProps } from "@/lib/shared/types/axis-props";
+import { devAssert } from "@/lib/shared/utils/dev-assert";
+import { DetailPanelPropsSchema } from "@/lib/client/zod/composite-props";
+import { cn } from "@/lib/core/utils";
+import { motion } from "@/lib/design/motion";
 
 export interface DetailField {
   /** Field label */
@@ -112,6 +114,13 @@ export function DetailPanel({
   footerSlot,
   animate = true,
 }: DetailPanelProps) {
+  // Validate props in dev
+  devAssert(
+    DetailPanelPropsSchema,
+    { title, description, fields, loading, columns, variant, animate },
+    "DetailPanelProps"
+  );
+
   const gridClasses = cn(
     "grid gap-4",
     columns === 1 && "grid-cols-1",

@@ -10,7 +10,7 @@
  */
 
 import { Suspense } from "react";
-import { getTasks } from "@/lib/actions/tasks";
+import { getTasks } from "@/lib/server/actions/tasks";
 import { TasksClient } from "./tasks-client";
 import TasksLoading from "./loading";
 

@@ -19,7 +19,7 @@ export {
 } from "./action-spec";
 
 // Motion tokens
-export { motion, enter, exit, transition, duration, stagger, staggerStyle } from "@/lib/motion-tokens";
+export { motion, enter, exit, transition, duration, stagger, staggerStyle } from "@/lib/design/motion";
 
 // Types
-export type { AxisProps } from "@/lib/types/axis-props";
+export type { AxisProps } from "@/lib/shared/types/axis-props";

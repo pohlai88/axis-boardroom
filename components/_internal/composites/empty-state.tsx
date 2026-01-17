@@ -7,9 +7,11 @@
 
 import React from "react";
 import { Button } from "@/components/primitives";
-import { AxisProps } from "@/lib/types/axis-props";
-import { cn } from "@/lib/utils";
-import { motion } from "@/lib/motion-tokens";
+import { AxisProps } from "@/lib/shared/types/axis-props";
+import { devAssert } from "@/lib/shared/utils/dev-assert";
+import { EmptyStatePropsSchema } from "@/lib/client/zod/composite-props";
+import { cn } from "@/lib/core/utils";
+import { motion } from "@/lib/design/motion";
 import { type LucideIcon, Inbox, FileQuestion, Search, FolderOpen } from "lucide-react";
 
 type EmptyStateVariant = "default" | "compact" | "card";
@@ -75,6 +77,13 @@ export function EmptyState({
   variant = "default",
   animate = true,
 }: EmptyStateProps) {
+  // Validate props in dev
+  devAssert(
+    EmptyStatePropsSchema,
+    { preset, title, description, action, secondaryAction, variant, animate },
+    "EmptyStateProps"
+  );
+
   const Icon = icon ?? presetIcons[preset];
   
   const containerClasses = cn(

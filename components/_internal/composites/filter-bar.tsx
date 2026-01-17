@@ -19,8 +19,10 @@ import {
   renderActionSpecs,
   type ActionSpec,
 } from "@/components/axis/action-spec"; // Direct import OK - action-spec has no deps on composites
-import { AxisProps } from "@/lib/types/axis-props";
-import { cn } from "@/lib/utils";
+import { AxisProps } from "@/lib/shared/types/axis-props";
+import { devAssert } from "@/lib/shared/utils/dev-assert";
+import { FilterBarPropsSchema } from "@/lib/client/zod/composite-props";
+import { cn } from "@/lib/core/utils";
 
 export interface StatusOption {
   value: string;
@@ -76,6 +78,13 @@ export function FilterBar({
   rightSlot,
   density = "default",
 }: FilterBarProps) {
+  // Validate props in dev
+  devAssert(
+    FilterBarPropsSchema,
+    { searchValue, searchPlaceholder, statusValue, statusOptions, density },
+    "FilterBarProps"
+  );
+
   const padding = density === "compact" ? "py-3" : "py-4";
 
   return (

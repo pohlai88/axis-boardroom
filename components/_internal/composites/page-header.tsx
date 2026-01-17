@@ -20,9 +20,11 @@ import {
   renderActionSpecs,
   type ActionSpec,
 } from "@/components/axis/action-spec"; // Direct import OK - action-spec has no deps on composites
-import { AxisProps } from "@/lib/types/axis-props";
-import { typography } from "@/lib/typography";
-import { cn } from "@/lib/utils";
+import { AxisProps } from "@/lib/shared/types/axis-props";
+import { devAssert } from "@/lib/shared/utils/dev-assert";
+import { PageHeaderPropsSchema } from "@/lib/client/zod/composite-props";
+import { typography } from "@/lib/design/typography";
+import { cn } from "@/lib/core/utils";
 
 export interface BreadcrumbItem {
   label: string;
@@ -75,6 +77,13 @@ export function PageHeader({
   variant = "default",
   tone = "default",
 }: PageHeaderProps) {
+  // Validate props in dev
+  devAssert(
+    PageHeaderPropsSchema,
+    { title, subtitle, breadcrumbs, status, variant, tone },
+    "PageHeaderProps"
+  );
+
   const spacing = variant === "compact" ? "py-3" : "py-4";
   const bgClass = tone === "subtle" ? "bg-muted/50" : "bg-background";
 

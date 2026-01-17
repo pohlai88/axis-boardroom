@@ -8,67 +8,101 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getTasks, getTaskById, createTask, updateTask, deleteTask } from "@/lib/actions/tasks";
 import { z } from "zod";
+import { createApiLogger, withApiLog } from "@/lib/core/logger-api";
+import { 
+  getTasks, 
+  getTaskById, 
+  createTaskAction 
+} from "@/lib/server/actions/tasks";
+import {
+  taskQueryParamsSchema,
+  createTaskInputSchema,
+  apiResultSchema,
+  taskSchema,
+} from "@/lib/contracts";
+import { zodIssuesToApiIssues, searchParamsToObject } from "@/lib/shared/utils/zod-helpers";
+import { createErrorResult, createSuccessResult, createValidationErrorResult } from "@/lib/server/utils/api-result";
+import { trackValidation } from "@/lib/shared/utils/validation-performance";
 
 // GET /api/tasks - List all tasks
 export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    const id = searchParams.get("id");
+  const reqId = request.headers.get('x-request-id') ?? crypto.randomUUID()
+  const log = createApiLogger('api.tasks', { reqId })
+  
+  return withApiLog(log, 'api.tasks.list', {}, async () => {
+    const searchParams = request.nextUrl.searchParams
 
-    if (id) {
-      // Get single task
-      const task = await getTaskById(id);
-      if (!task) {
-        return NextResponse.json({ error: "Task not found" }, { status: 404 });
-      }
-      return NextResponse.json(task);
+    // Validate query params - convert to object, then validate with Zod
+    const paramsObj = searchParamsToObject(searchParams)
+    const { result: paramsResult } = trackValidation(
+      taskQueryParamsSchema.partial(),
+      paramsObj,
+      'taskQueryParams'
+    )
+    
+    if (!paramsResult.success) {
+      const errorResult = createValidationErrorResult(
+        zodIssuesToApiIssues(paramsResult.error.issues)
+      );
+      return NextResponse.json(errorResult, { status: 400 });
     }
+    
+    const validatedParams = paramsResult.data
+    
+    const filters = validatedParams
 
-    // Get all tasks
-    const tasks = await getTasks();
-    return NextResponse.json(tasks);
-  } catch (error) {
-    console.error("GET /api/tasks error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch tasks" },
-      { status: 500 }
-    );
-  }
+    // Get all tasks (filtered)
+    const tasks = await getTasks()
+    // TODO: Apply filters to tasks query
+    
+    log.info({ event: 'api.tasks.list.ok', count: tasks.length }, `Retrieved ${tasks.length} tasks`)
+    
+    // Validate and return response
+    const result = createSuccessResult(tasks);
+    return NextResponse.json(result);
+  }).catch((error) => {
+    log.error({ event: 'api.tasks.list.error', error }, 'Failed to fetch tasks')
+    const errorResult = createErrorResult("INTERNAL", "Failed to fetch tasks");
+    return NextResponse.json(errorResult, { status: 500 });
+  })
 }
 
 // POST /api/tasks - Create a new task
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
+  const reqId = request.headers.get('x-request-id') ?? crypto.randomUUID()
+  const log = createApiLogger('api.tasks', { reqId })
+  
+  return withApiLog(log, 'api.tasks.create', {}, async () => {
+    const body = await request.json()
     
-    const createTaskSchema = z.object({
-      title: z.string().min(1).max(200),
-      type: z.enum(["bug", "feature", "documentation"]),
-      status: z.enum(["backlog", "todo", "in_progress", "done", "canceled"]).default("todo"),
-      priority: z.enum(["low", "medium", "high"]).default("medium"),
-    });
-
-    const validated = createTaskSchema.parse(body);
-    const result = await createTask(validated);
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
-    }
-
-    return NextResponse.json(result.data, { status: 201 });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Validation failed", details: error.issues },
-        { status: 400 }
+    // Validate body
+    const { result: bodyValidation } = trackValidation(
+      createTaskInputSchema,
+      body,
+      'createTaskInput'
+    )
+    if (!bodyValidation.success) {
+      const errorResult = createValidationErrorResult(
+        bodyValidation.error.issues.map(issue => ({
+          path: issue.path as (string | number)[],
+          message: issue.message,
+        }))
       );
+      return NextResponse.json(errorResult, { status: 400 });
     }
-    console.error("POST /api/tasks error:", error);
-    return NextResponse.json(
-      { error: "Failed to create task" },
-      { status: 500 }
-    );
-  }
+
+    const result = await createTaskAction(bodyValidation.data)
+
+    if (!result.ok) {
+      return NextResponse.json(result, { status: 400 });
+    }
+
+    log.info({ event: 'api.tasks.create.ok', taskId: result.data.id }, 'Task created via API')
+    return NextResponse.json(result, { status: 201 });
+  }).catch((error) => {
+    log.error({ event: 'api.tasks.create.error', error }, 'Failed to create task')
+    const errorResult = createErrorResult("INTERNAL", "Failed to create task");
+    return NextResponse.json(errorResult, { status: 500 });
+  })
 }

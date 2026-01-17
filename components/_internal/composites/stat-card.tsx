@@ -13,9 +13,11 @@ import {
   CardTitle,
   Skeleton,
 } from "@/components/primitives";
-import { AxisProps } from "@/lib/types/axis-props";
-import { cn } from "@/lib/utils";
-import { motion } from "@/lib/motion-tokens";
+import { AxisProps } from "@/lib/shared/types/axis-props";
+import { devAssert } from "@/lib/shared/utils/dev-assert";
+import { StatCardPropsSchema } from "@/lib/client/zod/composite-props";
+import { cn } from "@/lib/core/utils";
+import { motion } from "@/lib/design/motion";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -93,6 +95,13 @@ export function StatCard({
   description,
   animate = true,
 }: StatCardProps) {
+  // Validate props in dev
+  devAssert(
+    StatCardPropsSchema,
+    { label, value, trend, loading, size, highlight, description, animate },
+    "StatCardProps"
+  );
+
   const TrendIconComponent = trend ? TrendIcon[trend.direction] : null;
 
   const valueClasses = cn(

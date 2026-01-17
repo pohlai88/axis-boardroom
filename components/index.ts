@@ -1,8 +1,8 @@
 /**
  * Components Index
  *
- * Legacy compatibility export.
- * Use @/components/axis or @/components/primitives directly.
+ * Central export for AXIS components.
+ * Use @/components/axis or @/components/primitives directly for better tree-shaking.
  */
 
 // Re-export axis only (primitives overlap causes TS2308)

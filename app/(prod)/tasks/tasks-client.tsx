@@ -35,9 +35,10 @@ import {
   type Task,
   type TaskStatus,
   type TaskPriority,
-} from "@/lib/seed";
-import { deleteTask, deleteTasks, updateTask } from "@/lib/actions";
-import { cn } from "@/lib/utils";
+} from "@/lib/server/seed";
+import { deleteTaskAction, deleteTasksAction, updateTaskAction } from "@/lib/server/actions";
+import { handleError, handleApiResult } from "@/lib/client/utils/error-handler";
+import { cn } from "@/lib/core/utils";
 import { toast } from "sonner";
 import {
   MoreHorizontal,
@@ -285,21 +286,17 @@ export function TasksClient({ initialTasks }: TasksClientProps) {
       return;
     }
 
-    try {
-      const result = await deleteTask({ id: task.id });
-      if (result.success) {
-        toast.success("Task deleted successfully");
-        // Optimistically update local state
-        setTasks((prev) => prev.filter((t) => t.id !== task.id));
-        // Refresh from server
-        await refreshTasks();
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      toast.error("Failed to delete task");
-      console.error("Delete task error:", error);
+    const result = await deleteTaskAction({ id: task.id });
+    const data = handleApiResult(result);
+    
+    if (data) {
+      toast.success("Task deleted successfully");
+      // Optimistically update local state
+      setTasks((prev) => prev.filter((t) => t.id !== task.id));
+      // Refresh from server
+      await refreshTasks();
     }
+    // Error was automatically handled by handleApiResult
   }, [refreshTasks]);
 
   // Handle bulk delete - memoized callback
@@ -309,23 +306,19 @@ export function TasksClient({ initialTasks }: TasksClientProps) {
       return;
     }
 
-    try {
-      const ids = Array.from(selected);
-      const result = await deleteTasks(ids);
-      if (result.success) {
-        toast.success(`Deleted ${result.data.deletedCount} task(s)`);
-        // Optimistically update local state
-        setTasks((prev) => prev.filter((t) => !ids.includes(t.id)));
-        setSelected(new Set());
-        // Refresh from server
-        await refreshTasks();
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      toast.error("Failed to delete tasks");
-      console.error("Bulk delete error:", error);
+    const ids = Array.from(selected);
+    const result = await deleteTasksAction({ ids });
+    const data = handleApiResult(result);
+    
+    if (data) {
+      toast.success(`Deleted ${data.deletedCount} task(s)`);
+      // Optimistically update local state
+      setTasks((prev) => prev.filter((t) => !ids.includes(t.id)));
+      setSelected(new Set());
+      // Refresh from server
+      await refreshTasks();
     }
+    // Error was automatically handled by handleApiResult
   }, [selected, refreshTasks]);
 
   // Handle dialog success - memoized callback

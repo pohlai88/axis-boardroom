@@ -1,5 +1,5 @@
 import Image from "next/image"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/core/utils"
 import { Button } from "@/components/_internal/ui/button"
 import { Card, CardContent } from "@/components/_internal/ui/card"
 import { Input } from "@/components/_internal/ui/input"

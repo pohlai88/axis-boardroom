@@ -3,6 +3,8 @@
 import type React from "react"
 
 import { useEffect } from "react"
+import { QueryProvider } from "@/lib/client/providers/query-provider"
+import { AuthProvider } from "@/components/features/auth"
 
 /**
  * ClientLayout - Handles theme initialization and synchronization
@@ -11,6 +13,7 @@ import { useEffect } from "react"
  * - Initializes theme from localStorage on mount
  * - Listens for localStorage changes (cross-tab synchronization)
  * - Respects system preference if no saved theme
+ * - Wraps children with TanStack Query provider and Auth provider
  */
 export default function ClientLayout({
   children,
@@ -63,5 +66,11 @@ export default function ClientLayout({
     }
   }, [])
 
-  return <>{children}</>
+  return (
+    <AuthProvider>
+      <QueryProvider>
+        {children}
+      </QueryProvider>
+    </AuthProvider>
+  )
 }

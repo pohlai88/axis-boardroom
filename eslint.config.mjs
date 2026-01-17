@@ -1,10 +1,34 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import drizzlePlugin from "eslint-plugin-drizzle";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  // Drizzle ESLint Plugin (flat config format)
+  // Reference: https://orm.drizzle.team/docs/eslint-plugin
+  {
+    plugins: {
+      drizzle: drizzlePlugin,
+    },
+    rules: {
+      // Enforce WHERE clauses on DELETE and UPDATE operations
+      // Only checks objects named 'db' (our Drizzle database instance)
+      "drizzle/enforce-delete-with-where": [
+        "error",
+        {
+          drizzleObjectName: "db", // Only check 'db' object (from @/lib/server/drizzle)
+        },
+      ],
+      "drizzle/enforce-update-with-where": [
+        "error",
+        {
+          drizzleObjectName: "db", // Only check 'db' object (from @/lib/server/drizzle)
+        },
+      ],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

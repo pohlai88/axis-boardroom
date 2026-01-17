@@ -16,8 +16,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/primitives";
-import { AxisProps } from "@/lib/types/axis-props";
-import { cn } from "@/lib/utils";
+import { AxisProps } from "@/lib/shared/types/axis-props";
+import { devAssert } from "@/lib/shared/utils/dev-assert";
+import { ConfirmDialogPropsSchema } from "@/lib/client/zod/composite-props";
+import { cn } from "@/lib/core/utils";
 import { AlertTriangle, Trash2, Info, type LucideIcon } from "lucide-react";
 
 type ConfirmDialogVariant = "default" | "destructive" | "warning" | "info";
@@ -103,6 +105,13 @@ export function ConfirmDialog({
   loading = false,
   disabled = false,
 }: ConfirmDialogProps) {
+  // Validate props in dev
+  devAssert(
+    ConfirmDialogPropsSchema,
+    { open, title, description, confirmLabel, cancelLabel, variant, loading, disabled },
+    "ConfirmDialogProps"
+  );
+
   const Icon = icon ?? variantIcons[variant];
 
   const handleConfirm = () => {

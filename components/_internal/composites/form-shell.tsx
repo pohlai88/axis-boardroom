@@ -17,9 +17,11 @@ import {
   Alert,
   AlertDescription,
 } from "@/components/primitives";
-import { AxisProps } from "@/lib/types/axis-props";
-import { cn } from "@/lib/utils";
-import { motion } from "@/lib/motion-tokens";
+import { AxisProps } from "@/lib/shared/types/axis-props";
+import { devAssert } from "@/lib/shared/utils/dev-assert";
+import { FormShellPropsSchema } from "@/lib/client/zod/composite-props";
+import { cn } from "@/lib/core/utils";
+import { motion } from "@/lib/design/motion";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 
 type FormShellState = "idle" | "loading" | "success" | "error";
@@ -92,6 +94,13 @@ export function FormShell({
   disabled = false,
   footerAlign = "right",
 }: FormShellProps) {
+  // Validate props in dev
+  devAssert(
+    FormShellPropsSchema,
+    { title, description, state, errorMessage, successMessage, submitLabel, cancelLabel, variant, disabled, footerAlign },
+    "FormShellProps"
+  );
+
   const isLoading = state === "loading";
   const isDisabled = disabled || isLoading;
 

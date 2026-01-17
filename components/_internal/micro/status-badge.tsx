@@ -6,9 +6,9 @@
  */
 
 import { Badge } from "@/components/primitives";
-import { statusClasses } from "@/lib/design-tokens";
-import { AxisProps } from "@/lib/types/axis-props";
-import { ApprovalStatus } from "@/lib/schemas/domain";
+import { statusClasses } from "@/lib/design/tokens";
+import { AxisProps } from "@/lib/shared/types/axis-props";
+import { ApprovalStatus } from "@/lib/client/zod/domain";
 
 export interface StatusBadgeProps
   extends AxisProps<{

@@ -8,8 +8,10 @@
 
 import React from "react";
 import { Skeleton } from "@/components/primitives";
-import { AxisProps } from "@/lib/types/axis-props";
-import { cn } from "@/lib/utils";
+import { AxisProps } from "@/lib/shared/types/axis-props";
+import { devAssert } from "@/lib/shared/utils/dev-assert";
+import { DataTableShellPropsSchema } from "@/lib/client/zod/composite-props";
+import { cn } from "@/lib/core/utils";
 
 export interface DataTableShellProps
   extends AxisProps<{
@@ -53,6 +55,13 @@ export function DataTableShell({
   emptyAction,
   pagination,
 }: DataTableShellProps) {
+  // Validate props in dev
+  devAssert(
+    DataTableShellPropsSchema,
+    { isLoading, count, emptyTitle, emptyDescription },
+    "DataTableShellProps"
+  );
+
   return (
     <div className="space-y-4">
       {(toolbarLeft || toolbarRight || count !== undefined) && (
